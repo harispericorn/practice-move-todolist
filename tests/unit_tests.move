@@ -35,11 +35,38 @@ module todolist_addr::unit_tests{
 
     }
 
-    #[test (admin=@0x123)]
-    #[expected_failure(abort_code=1)]
-    fun cannot_update_inintialized_task(admin:&signer){
+        #[test (admin=@0x123)]
+    fun test_resource_flow(admin:&signer) {
+        todolist::callCommonInit(admin);
         account::create_account_for_test(signer::address_of(admin));
-        todolist::complete_task(admin, 1);
+        // todolist::create_common_task(admin,string::utf8(b"New Task"));
+        // let task_count= todolist::getCommonEventCount(admin);
+        // let task_count_from_resource= todolist::getCommonTaskCounter(admin);
+        // assert!(task_count == 1, 4);
+        // assert!(task_count_from_resource==1,5);
+        // let (id,completed,content,addr)= todolist::getTaskRecord(admin);
+        // assert!(id==1,10);
+        // assert!(completed==false,11);
+        // assert!(content== string::utf8(b"New Task"),12);
+        // assert!(addr== signer::address_of(admin),13);
+        // // complete task
+        // todolist::complete_task(admin, 1);
+
+        // let (id,completed,content,addr)= todolist::getTaskRecord(admin);
+        // assert!(id==1,10);
+        // //everything else same completed flag will become true
+        // assert!(completed==true,11);
+        // assert!(content== string::utf8(b"New Task"),12);
+        // assert!(addr== signer::address_of(admin),13);
+       
+
     }
+
+    // #[test (admin=@0x123)]
+    // #[expected_failure(abort_code=1)]
+    // fun cannot_update_inintialized_task(admin:&signer){
+    //     account::create_account_for_test(signer::address_of(admin));
+    //     todolist::complete_task(admin, 1);
+    // }
     
 }

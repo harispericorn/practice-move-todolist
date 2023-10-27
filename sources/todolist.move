@@ -60,14 +60,14 @@ module todolist_addr::todolist {
 
 
 
-  public entry fun create_common_task(_account: &signer, content: String) acquires TodoListCommon{
+  public entry fun create_common_task(account: &signer, content: String) acquires TodoListCommon{
     let commonTodoList= borrow_global_mut<TodoListCommon>(@todolist_addr);
-    let resource_signer = account::create_signer_with_capability(&commonTodoList.signer_cap);
-    let signer_address= signer::address_of(&resource_signer);
+    // let resource_signer = account::create_signer_with_capability(&commonTodoList.signer_cap);
+    // let signer_address= signer::address_of(&resource_signer);
     let counter= commonTodoList.task_counter + 1;
     let new_task= Task {
       task_id: counter,
-      address: signer_address,
+      address: signer::address_of(account),
       content,
       completed: false
     };
@@ -106,9 +106,9 @@ module todolist_addr::todolist {
 
   public entry fun complete_common_task(_account: &signer, task_id: u64) acquires TodoListCommon{
     let commonTodoList= borrow_global_mut<TodoListCommon>(@todolist_addr);
-    let resource_signer = account::create_signer_with_capability(&commonTodoList.signer_cap);
-    let signer_address= signer::address_of(&resource_signer);
-    assert!(exists<TodoListCommon>(signer_address), E_NOT_INITIALIZED);
+    // let resource_signer = account::create_signer_with_capability(&commonTodoList.signer_cap);
+    // let signer_address= signer::address_of(&resource_signer);
+    assert!(exists<TodoListCommon>(@todolist_addr), E_NOT_INITIALIZED);
     assert!(table::contains(&commonTodoList.tasks,task_id),ETASK_DOESNT_EXIST);
     let task_record= table::borrow_mut(&mut commonTodoList.tasks,task_id);
     assert!(task_record.completed==false,ETASK_IS_COMPLETED);
@@ -130,35 +130,34 @@ module todolist_addr::todolist {
     let todoList= borrow_global<TodoList>(signer::address_of(admin));
     let task_record=table::borrow(&todoList.tasks,todoList.task_counter);
     (task_record.task_id,task_record.completed,task_record.content,task_record.address)
-  }
+  } 
+
    #[test_only]
   public(friend) entry fun getCommonEventCount(admin: &signer):u64 acquires TodoListCommon{
-    let commonTodoList= borrow_global_mut<TodoListCommon>(@todolist_addr);
-    let resource_signer = account::create_signer_with_capability(&commonTodoList.signer_cap);
-    let signer_address= signer::address_of(&resource_signer);
-    event::counter(&borrow_global<TodoListCommon>(signer_address).set_task_event)
+    event::counter(&borrow_global<TodoListCommon>(@todolist_addr).set_task_event)
   }
 
   #[test_only]
   public(friend) entry fun getCommonTaskCounter(admin: &signer):u64 acquires TodoListCommon{
-    let commonTodoList= borrow_global_mut<TodoListCommon>(@todolist_addr);
-    let resource_signer = account::create_signer_with_capability(&commonTodoList.signer_cap);
-    let signer_address= signer::address_of(&resource_signer);
-    borrow_global<TodoListCommon>(signer_address).task_counter
+    borrow_global<TodoListCommon>(@todolist_addr).task_counter
   }
 
   #[test_only]
   public(friend) entry fun getCommonTaskRecord(admin: &signer):(u64,bool,String,address) acquires TodoListCommon{
     let commonTodoList= borrow_global_mut<TodoListCommon>(@todolist_addr);
-    let resource_signer = account::create_signer_with_capability(&commonTodoList.signer_cap);
-    let signer_address= signer::address_of(&resource_signer);
     let task_record=table::borrow(&commonTodoList.tasks,commonTodoList.task_counter);
     (task_record.task_id,task_record.completed,task_record.content,task_record.address)
   }
 
   #[test_only]
-  public(friend) entry fun callCommonInit(admin: &signer) {
-    init_module(admin)
+  public(friend) entry fun init_test(resource_account: &signer, resource_signer_cap: SignerCapability) {
+    let task_holder= TodoListCommon{
+      signer_cap: resource_signer_cap,
+      tasks: table::new(),
+      set_task_event: account::new_event_handle<Task>(resource_account),
+      task_counter: 0
+    };
+    move_to(resource_account,task_holder)
   }
 
 }
